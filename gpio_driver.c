@@ -25,7 +25,7 @@
  * character device structure, GPIO class, and LED status.
  */
 static struct {
-	dev_t my_gpoi_dev;
+	dev_t my_gpio_dev;
 	struct cdev my_gpio_dev;
 	struct class *my_gpio_class;
 	unsigned int led_status;
@@ -118,7 +118,7 @@ static struct file_operations fops = {
  */
 static int __init initmodule(void) { 
 	// Allocate a device number for the GPIO device
-	if( alloc_chrdev_region(&led_module_st.my_gpoi_dev, 0 , 1, DRIVER_NAME) < 0) {
+	if( alloc_chrdev_region(&led_module_st.my_gpio_dev, 0 , 1, DRIVER_NAME) < 0) {
 		pr_err("Failed to allocate device number!\n");
 		return -1;
 	}
@@ -130,14 +130,14 @@ static int __init initmodule(void) {
 	}
 	
 	// Create the device file for the GPIO device
-	if(device_create(led_module_st.my_gpio_class, NULL, led_module_st.my_gpoi_dev, NULL, DRIVER_NAME) == NULL) {
+	if(device_create(led_module_st.my_gpio_class, NULL, led_module_st.my_gpio_dev, NULL, DRIVER_NAME) == NULL) {
 		pr_err("Failed to create the character device file!\n");
 		goto FileError;
 	}
 
 	// Initialize the character device and add it to /dev
 	cdev_init(&led_module_st.my_gpio_dev, &fops);
-	if(cdev_add(&led_module_st.my_gpio_dev, led_module_st.my_gpoi_dev, 1) == -1) {
+	if(cdev_add(&led_module_st.my_gpio_dev, led_module_st.my_gpio_dev, 1) == -1) {
 		pr_err("Failed to register the character device to /dev!\n");
 		goto AddError;
 	}
@@ -160,11 +160,11 @@ static int __init initmodule(void) {
 Gpio20Error:
 	gpio_free(GPIO_PIN);
 AddError:
-	device_destroy(led_module_st.my_gpio_class, led_module_st.my_gpoi_dev);
+	device_destroy(led_module_st.my_gpio_class, led_module_st.my_gpio_dev);
 FileError:
 	class_destroy(led_module_st.my_gpio_class);
 ClassError:
-	unregister_chrdev_region(led_module_st.my_gpoi_dev, 1);
+	unregister_chrdev_region(led_module_st.my_gpio_dev, 1);
 	return -1;
 
 } 
@@ -173,9 +173,9 @@ static void __exit exitmodule(void) {
 	gpio_set_value(GPIO_PIN,0);
 	gpio_free(GPIO_PIN);
 	cdev_del(&led_module_st.my_gpio_dev);
-	device_destroy(led_module_st.my_gpio_class, led_module_st.my_gpoi_dev);
+	device_destroy(led_module_st.my_gpio_class, led_module_st.my_gpio_dev);
 	class_destroy(led_module_st.my_gpio_class);
-	unregister_chrdev_region(led_module_st.my_gpoi_dev, 1);
+	unregister_chrdev_region(led_module_st.my_gpio_dev, 1);
 }
 
 module_init(initmodule);
